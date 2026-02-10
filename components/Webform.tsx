@@ -102,7 +102,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
     if (lineTest) {
       if (lineTest.status === 'good') {
         setToast({
-          message: `Customer’s service seems good from Enable’s side, please match the SVID = ${lineTest.svlan} & CVID = ${lineTest.cvlan} configuration, check whether the LAN port is correctly connected to Port ${lineTest.port} of the ONT`,
+          message: `Customer’s service seems good from Fibre Networks’ side, please match the SVID = ${lineTest.svlan} & CVID = ${lineTest.cvlan} configuration, check whether the LAN port is correctly connected to Port ${lineTest.port} of the ONT`,
           type: 'success',
           sticky: true
         });
@@ -160,7 +160,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
     if (ibss && ibss.requestType === 'New Connection' && ibss.status === 'Closed' && ibss.rfsDate >= today) {
       onSendEmail({
         from: 'noc@test.com',
-        to: 'csc@enable.net.nz',
+        to: 'csc@fibrenetworks.co.nz',
         subject: 'FAILED INTACT',
         body: `FAILED INTACT REPORT\n\nService ID: ${formData.serviceId}\nRequester: ${formData.requesterEmail}\nCustomer: ${formData.customerName}\nAddress: ${formData.address}\nMobile: ${formData.mobileNumber}\n\nPlease handle as Failed Intact.`
       });
@@ -204,7 +204,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
     <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200 max-w-3xl mx-auto transition-all relative">
       <div className="mb-8 border-b border-slate-100 pb-4">
         <h2 className="text-3xl font-extrabold text-slate-800">RSP Fault Submission</h2>
-        <p className="text-slate-500 mt-1">Submit customer trouble tickets (CTT) to Enable Networks NOC.</p>
+        <p className="text-slate-500 mt-1">Submit customer trouble tickets (CTT) to Fibre Networks NOC.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -217,7 +217,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
               value={formData.serviceId}
               onChange={(e) => setFormData({...formData, serviceId: e.target.value.toUpperCase()})}
               className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:bg-white transition-all outline-none font-mono text-lg text-slate-900"
-              placeholder="ENTPRB02582993"
+              placeholder="SID12345678901"
               disabled={isProcessingChecks}
             />
             {isProcessingChecks && (
@@ -233,7 +233,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
             value={formData.requesterEmail}
             onChange={(e) => setFormData({...formData, requesterEmail: e.target.value})}
             className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:bg-white transition-all outline-none text-slate-900"
-            placeholder="support@mercury.co.nz"
+            placeholder="support@partner.co.nz"
           />
         </div>
 

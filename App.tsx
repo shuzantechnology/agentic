@@ -34,9 +34,9 @@ const App: React.FC = () => {
       <header className="bg-slate-900 text-white shadow-2xl sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto flex justify-between items-center px-8 py-5">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-900/50">E</div>
+            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-900/50">F</div>
             <div>
-              <h1 className="text-2xl font-black tracking-tighter uppercase italic">Enable Networks</h1>
+              <h1 className="text-2xl font-black tracking-tighter uppercase italic">Fibre Networks</h1>
               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">NOC Redlos Automation Agent</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ const App: React.FC = () => {
 
       <footer className="bg-white border-t border-slate-200 py-6 px-8 text-center">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <span>&copy; 2025 Enable Networks Limited &bull; Regional NOC Operations</span>
+          <span>&copy; 2025 Fibre Networks Limited &bull; Regional NOC Operations</span>
           <div className="flex gap-6">
             <span className="text-emerald-500 flex items-center gap-2"><span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Network Status: Nominal</span>
             <span>Security Level: Tier 1</span>

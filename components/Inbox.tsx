@@ -16,9 +16,9 @@ export const Inbox: React.FC<InboxProps> = ({ emails, tickets, onSendEmail, onSt
 
   const filteredEmails = emails.filter(e => {
     if (selectedAccount === 'noc') return e.to === 'noc@test.com' || e.from === 'noc@test.com';
-    if (selectedAccount === 'csc') return e.to === 'csc@enable.net.nz' || e.to === 'csc@test.com';
+    if (selectedAccount === 'csc') return e.to === 'csc@fibrenetworks.co.nz' || e.to === 'csc@test.com';
     if (selectedAccount === 'field') return e.to === 'field_force@test.com' || e.from === 'field_force@test.com';
-    if (selectedAccount === 'rsp') return !['noc@test.com', 'csc@enable.net.nz', 'csc@test.com', 'field_force@test.com'].includes(e.to);
+    if (selectedAccount === 'rsp') return !['noc@test.com', 'csc@fibrenetworks.co.nz', 'csc@test.com', 'field_force@test.com'].includes(e.to);
     return false;
   });
 
@@ -73,7 +73,7 @@ Action Taken: ${actionTaken}
 If you would like further information, please respond to this email, or contact us on 0800 123 456 option 9.
 
 Kind regards,
-Enable Networks NOC`
+Fibre Networks NOC`
     });
 
     onStatusUpdate(ticketId, 'Resolved');
@@ -88,8 +88,8 @@ Enable Networks NOC`
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">My Accounts</h3>
         <nav className="space-y-1">
           {[
-            { id: 'noc', label: 'Enable NOC', email: 'noc@test.com' },
-            { id: 'csc', label: 'Enable CSC', email: 'csc@enable.net.nz' },
+            { id: 'noc', label: 'Fibre Networks NOC', email: 'noc@test.com' },
+            { id: 'csc', label: 'Fibre Networks CSC', email: 'csc@fibrenetworks.co.nz' },
             { id: 'field', label: 'Field Force', email: 'field_force@test.com' },
             { id: 'rsp', label: 'RSP Partners', email: 'Partners Inbox' }
           ].map(acc => (
