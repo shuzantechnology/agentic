@@ -1,0 +1,5 @@
+{
+  "name": "Redlos Workflow Agent",
+  "description": "An agentic bot system for managing Enable Networks' Redlos trouble tickets, featuring automated routing, pre-checks, and field service coordination.",
+  "requestFramePermissions": []
+}
