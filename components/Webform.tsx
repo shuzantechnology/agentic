@@ -5,23 +5,37 @@ import {
   ConnectionType, 
   Priority, 
   Ticket, 
-  Email 
+  Email,
+  OnHoldTicket,
+  UnplannedOutage,
+  PlannedOutage,
+  IBSSRecord,
+  AltiplanoCheck
 } from '../types';
-import { 
-  ON_HOLD_TICKETS, 
-  UNPLANNED_OUTAGES, 
-  PLANNED_OUTAGES, 
-  IBSS_RECORDS, 
-  ALTIPLANO_CHECKS 
-} from '../mockData';
 
 interface WebformProps {
   nextTicketId: number;
   onTicketCreated: (ticket: Ticket) => void;
   onSendEmail: (email: Omit<Email, 'id' | 'timestamp'>) => void;
+  onHoldTickets: OnHoldTicket[];
+  unplannedOutages: UnplannedOutage[];
+  plannedOutages: PlannedOutage[];
+  ibssRecords: IBSSRecord[];
+  altiplanoChecks: AltiplanoCheck[];
+  tickets: Ticket[];
 }
 
-export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated, onSendEmail }) => {
+export const Webform: React.FC<WebformProps> = ({ 
+  nextTicketId, 
+  onTicketCreated, 
+  onSendEmail,
+  onHoldTickets,
+  unplannedOutages,
+  plannedOutages,
+  ibssRecords,
+  altiplanoChecks,
+  tickets
+}) => {
   const [formData, setFormData] = useState<TicketRequest>({
     serviceId: '',
     requesterEmail: '',
@@ -47,23 +61,39 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
 
   const runWorkflowChecks = useCallback((sid: string) => {
     setIsProcessingChecks(true);
+    setCanSubmit(false); // Reset submission capability at start of check
     
-    const existing = ON_HOLD_TICKETS.find(t => t.serviceId === sid);
-    if (existing) {
+    // 1. Check existing on-hold tickets (from mock data / CSV)
+    const existingOnHold = onHoldTickets.find(t => t.serviceId === sid);
+    if (existingOnHold) {
       setToast({
-        message: `There is already a ticket open with ID# ${existing.ticketNumber} for this service ID, kindly follow up using the same ticket.`,
+        message: `There is already an active ticket logged (ID# ${existingOnHold.ticketNumber}) for this service ID. Please follow up on the existing request rather than opening a new one.`,
         type: 'warning',
-        canCopy: existing.ticketNumber,
+        canCopy: existingOnHold.ticketNumber,
         sticky: true
       });
       setIsProcessingChecks(false);
       return;
     }
 
-    const unplanned = UNPLANNED_OUTAGES.find(o => o.serviceId === sid);
+    // 2. Check current session tickets (prevent double submission in real-time)
+    const sessionTicket = tickets.find(t => t.serviceId === sid && t.status !== 'Resolved');
+    if (sessionTicket) {
+      setToast({
+        message: `A ticket is already open for this service ID (Ticket ID: ${sessionTicket.id}). Kindly refer to the existing ticket for updates.`,
+        type: 'warning',
+        canCopy: sessionTicket.id.toString(),
+        sticky: true
+      });
+      setIsProcessingChecks(false);
+      return;
+    }
+
+    // 3. Check Unplanned Outages
+    const unplanned = unplannedOutages.find(o => o.serviceId === sid);
     if (unplanned) {
       setToast({
-        message: `This service is part of the ongoing network outage (${unplanned.outageRef}), please check the outage notification received with reference to this service ID`,
+        message: `This service is part of the ongoing network outage (${unplanned.outageRef}). Please check the outage notification received for this service ID.`,
         type: 'error',
         sticky: true
       });
@@ -71,14 +101,15 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
       return;
     }
 
-    const planned = PLANNED_OUTAGES.find(p => p.serviceIds.includes(sid));
+    // 4. Check Planned Outages
+    const planned = plannedOutages.find(p => p.serviceIds.includes(sid));
     if (planned) {
       const now = new Date();
       const start = new Date(planned.startTime);
       const end = new Date(planned.endTime);
       if (now >= start && now <= end) {
         setToast({
-          message: `This service ID is part of the ongoing planned network outage, which was planned between ${planned.startTime} & ${planned.endTime}, please check the outage notification received with reference to this service ID`,
+          message: `This service ID is part of a planned maintenance window (between ${planned.startTime} and ${planned.endTime}). Please refer to the maintenance notice.`,
           type: 'info',
           sticky: true
         });
@@ -87,10 +118,11 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
       }
     }
 
-    const ibss = IBSS_RECORDS.find(i => i.serviceId === sid);
+    // 5. Check Termination Status
+    const ibss = ibssRecords.find(i => i.serviceId === sid);
     if (ibss && ibss.requestType === 'Terminate' && (ibss.status === 'Closed' || ibss.status === 'Approved')) {
       setToast({
-        message: "This is a terminated service, please enter an active service ID to continue",
+        message: "This is a terminated service. Please enter an active service ID to continue.",
         type: 'error',
         sticky: true
       });
@@ -98,18 +130,19 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
       return;
     }
 
-    const lineTest = ALTIPLANO_CHECKS.find(a => a.serviceId === sid);
+    // 6. Altiplano Real-time Check
+    const lineTest = altiplanoChecks.find(a => a.serviceId === sid);
     if (lineTest) {
       if (lineTest.status === 'good') {
         setToast({
-          message: `Customer’s service seems good from Fibre Networks’ side, please match the SVID = ${lineTest.svlan} & CVID = ${lineTest.cvlan} configuration, check whether the LAN port is correctly connected to Port ${lineTest.port} of the ONT`,
+          message: `Line test indicates the service is active from Fibre Networks' side. (SVID: ${lineTest.svlan}, CVID: ${lineTest.cvlan}). Please verify customer configuration and Port ${lineTest.port} connectivity.`,
           type: 'success',
           sticky: true
         });
         setCanSubmit(true);
       } else {
         setToast({
-          message: "There seems to be an issue with Layer-1 or Layer-2, please proceed to submit the ticket.",
+          message: "Potential Layer-1 or Layer-2 fault detected. Real-time diagnostics confirm service interruption. Please proceed with the submission.",
           type: 'warning',
           sticky: true
         });
@@ -117,7 +150,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
       }
     } else {
       setToast({
-        message: "Service not found in real-time monitoring. Manual intervention required. Please proceed to submit.",
+        message: "Diagnostics unavailable. Manual NOC assessment required. You may proceed to submit the ticket.",
         type: 'warning',
         sticky: true
       });
@@ -125,7 +158,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
     }
 
     setIsProcessingChecks(false);
-  }, []);
+  }, [onHoldTickets, tickets, unplannedOutages, plannedOutages, ibssRecords, altiplanoChecks]);
 
   useEffect(() => {
     if (formData.serviceId.length === 14) {
@@ -139,6 +172,8 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!canSubmit) return;
+
     const missingFields = Object.entries(formData).filter(([key, val]) => !val);
     if (missingFields.length > 0) {
       const fieldName = missingFields[0][0].replace(/([A-Z])/g, ' $1').toLowerCase();
@@ -154,7 +189,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
       createdAt: new Date().toLocaleString()
     };
 
-    const ibss = IBSS_RECORDS.find(i => i.serviceId === formData.serviceId);
+    const ibss = ibssRecords.find(i => i.serviceId === formData.serviceId);
     const today = new Date().toISOString().split('T')[0];
     
     if (ibss && ibss.requestType === 'New Connection' && ibss.status === 'Closed' && ibss.rfsDate >= today) {
@@ -170,7 +205,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
         from: 'noc@test.com',
         to: 'field_force@test.com',
         subject: `NEW WORK ORDER: TT-${newTicketId}`,
-        body: `WORK ORDER DETAILS\n------------------\nCustomer Job ID: ${newTicketId}\nWork Order Type: FAULTS\nSite Address: ${formData.address}\nPrimary Incident Type: Reactive Maintenance\nIs Business Connection?: ${formData.connectionType === ConnectionType.Business ? 'Yes' : 'No'}\nContact Name: ${formData.customerName}\nPriority: ${formData.priority}\nMobile Phone: ${formData.mobileNumber}\nWork Order Information: ${formData.issueReported}`
+        body: `WORK ORDER DETAILS\n------------------\nCustomer Job ID: ${newTicketId}\nService ID: ${formData.serviceId}\nWork Order Type: FAULTS\nSite Address: ${formData.address}\nPrimary Incident Type: Reactive Maintenance\nIs Business Connection?: ${formData.connectionType === ConnectionType.Business ? 'Yes' : 'No'}\nContact Name: ${formData.customerName}\nPriority: ${formData.priority}\nMobile Phone: ${formData.mobileNumber}\nWork Order Information: ${formData.issueReported}`
       });
       newTicket.status = 'Field WO Created';
       newTicket.woNumber = `WO-${Math.floor(Math.random() * 1000000)}`;
@@ -389,7 +424,7 @@ export const Webform: React.FC<WebformProps> = ({ nextTicketId, onTicketCreated,
               }}
               className="bg-white/50 hover:bg-white text-[10px] font-bold uppercase tracking-widest text-indigo-700 py-2 rounded-lg border border-indigo-100 transition-colors"
             >
-              Copy Existing Ticket: {toast.canCopy}
+              Copy Reference: {toast.canCopy}
             </button>
           )}
         </div>

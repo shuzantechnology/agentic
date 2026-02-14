@@ -41,7 +41,7 @@ export interface PlannedOutage {
   ponPort: string;
   cabinetId: string;
   serviceIds: string[];
-  startTime: string; // ISO format suggested for simulation
+  startTime: string; 
   endTime: string;
   ref: string;
 }
@@ -87,4 +87,9 @@ export interface SignOff {
   troubleFound: string;
   cause: string;
   actionTaken: string;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
 }
