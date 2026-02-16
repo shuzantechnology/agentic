@@ -27,13 +27,11 @@ export interface Ticket extends TicketRequest {
   woNumber?: string;
 }
 
-// Matches: On-hold tickets.csv
 export interface OnHoldTicket {
   ticketNumber: string;
   serviceId: string;
 }
 
-// Matches: Planned_outages.csv
 export interface PlannedOutage {
   coName: string;
   oltName: string;
@@ -46,7 +44,6 @@ export interface PlannedOutage {
   ref: string;
 }
 
-// Matches: Altiplano_checks.csv
 export interface AltiplanoCheck {
   serviceId: string;
   ontSerial: string;
@@ -59,7 +56,6 @@ export interface AltiplanoCheck {
   opticalRange: string;
 }
 
-// Matches: IBSS.csv
 export interface IBSSRecord {
   serviceId: string;
   rfsDate: string;
@@ -67,7 +63,6 @@ export interface IBSSRecord {
   status: 'Closed' | 'Approved' | 'Open' | 'Pending';
 }
 
-// Matches: Outages.csv (Unplanned)
 export interface UnplannedOutage {
   serviceId: string;
   outageRef: string;
@@ -82,14 +77,15 @@ export interface Email {
   timestamp: string;
 }
 
-export interface SignOff {
-  dateRestored: string;
-  troubleFound: string;
-  cause: string;
-  actionTaken: string;
-}
-
 export interface ChatMessage {
   role: 'user' | 'model';
   parts: { text: string }[];
+}
+
+export interface GeneratedReport {
+  id: string;
+  title: string;
+  type: 'CSV' | 'PIR' | 'ANALYSIS';
+  data: string; // CSV content or Markdown for PIR
+  timestamp: string;
 }

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Email, Ticket, SignOff } from '../types';
+import { Email, Ticket } from '../types';
 import { ALTIPLANO_CHECKS } from '../mockData';
 
 interface InboxProps {
